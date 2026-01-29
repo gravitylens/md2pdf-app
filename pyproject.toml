@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "md2pdf"
+version = "1.0.0"
+description = "Convert markdown files to professionally styled PDF reports"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+dependencies = [
+    "PyYAML>=6.0",
+]
+authors = [
+    {name = "Jason Niles"}
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Education",
+    "Intended Audience :: End Users/Desktop",
+    "Topic :: Text Processing :: Markup :: Markdown",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+
+[project.scripts]
+md2pdf = "md2pdf.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/jasonniles/md2pdf"
