@@ -60,6 +60,24 @@ Security is paramount in modern applications. We will implement:
 
 > "Security is not a product, but a process." – Bruce Schneier
 
+### Performance Metrics
+
+We aim to achieve the following performance targets using the formula for response time optimization:
+
+$$
+T_{total} = T_{network} + T_{processing} + T_{rendering}
+$$
+
+Where response time must satisfy: $T_{total} < 200ms$ for 95th percentile requests.
+
+Additionally, our caching strategy will follow the hit rate calculation:
+
+$$
+\text{Hit Rate} = \frac{\text{Cache Hits}}{\text{Cache Hits} + \text{Cache Misses}} \times 100\%
+$$
+
+We target a cache hit rate of at least 80% for frequently accessed data.
+
 # Implementation Timeline
 
 The project is divided into four major phases:

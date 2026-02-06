@@ -10,8 +10,14 @@
   abstract: none,
   body
 ) = {
-  // Set document properties
-  set document(title: title, author: author)
+  // Set document properties (only if provided)
+  if title != none and author != none {
+    set document(title: title, author: author)
+  } else if title != none {
+    set document(title: title)
+  } else if author != none {
+    set document(author: author)
+  }
   
   // Modern color palette
   let primary = rgb("#2563eb")      // Modern blue

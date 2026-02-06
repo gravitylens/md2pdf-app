@@ -158,6 +158,242 @@ All parameters (except `body`) should have default values, typically `none`:
 ) = { ... }
 ```
 
+## Handling Missing Metadata
+
+### Strategy 1: Optional Parameters with Defaults
+
+The recommended approach is to make all metadata optional with sensible defaults:
+
+```typst
+#let my-template(
+  title: none,
+  author: none,
+  date: none,
+  body
+) = {
+  // Only render if provided
+  if title != none {
+    align(center)[#text(24pt, weight: "bold")[#title]]
+  }
+  
+  // Provide fallback values
+  let display-author = if author != none { author } else { "Anonymous" }
+  let display-date = if date != none { date } else { datetime.today().display() }
+  
+  text[By #display-author on #display-date]
+  
+  body
+}
+```
+
+### Strategy 2: Computed Defaults
+
+Generate defaults dynamically when metadata is missing:
+
+```typst
+#let my-template(
+  title: none,
+  author: none,
+  date: none,
+  body
+) = {
+  // Use filename or placeholder if no title
+  let effective-title = if title != none { title } else { "Untitled Document" }
+  
+  // Use current date if not provided
+  let effective-date = if date != none { 
+    date 
+  } else { 
+    datetime.today().display("[year]-[month]-[day]")
+  }
+  
+  // Conditional sections
+  if author != none {
+    text[Author: #author]
+  } else {
+    // Skip author section entirely or show placeholder
+    text(fill: gray)[Author: Not specified]
+  }
+  
+  body
+}
+```
+
+### Strategy 3: Required vs Optional
+
+Distinguish between required and optional fields:
+
+```typst
+#let my-template(
+  title: none,      // Required - show error if missing
+  author: none,     // Optional
+  date: none,       // Optional - auto-generate
+  body
+) = {
+  // Validate required fields
+  if title == none {
+    // Show error in document
+    align(center)[
+      #text(fill: red, size: 16pt, weight: "bold")[
+        ERROR: Document title is required
+      ]
+    ]
+    return  // Stop processing
+  }
+  
+  // Proceed with valid title
+  align(center)[#text(24pt, weight: "bold")[#title]]
+  
+  // Optional fields
+  if author != none {
+    align(center)[#text(12pt)[#author]]
+  }
+  
+  body
+}
+```
+
+### Strategy 4: Validation with Warnings
+
+Provide visual indicators for missing recommended fields:
+
+```typst
+#let my-template(
+  title: none,
+  author: none,
+  date: none,
+  body
+) = {
+  // Show warnings for missing fields
+  let warnings = ()
+  
+  if title == none {
+    warnings.push("Title is missing")
+  }
+  if author == none {
+    warnings.push("Author is missing")
+  }
+  
+  // Display warnings if any
+  if warnings.len() > 0 {
+    block(
+      fill: yellow.lighten(80%),
+      inset: 1em,
+      radius: 4pt,
+      stroke: 1pt + orange
+    )[
+      #text(weight: "bold")[⚠ Warnings:]
+      #for warning in warnings [
+        - #warning
+      ]
+    ]
+  }
+  
+  // Render with fallbacks
+  align(center)[
+    #text(24pt, weight: "bold")[
+      #if title != none { title } else { "Untitled Document" }
+    ]
+  ]
+  
+  body
+}
+```
+
+### Strategy 5: Template-Specific Defaults
+
+Different templates may have different requirements:
+
+```typst
+// Academic paper - requires author and title
+#let academic-paper(
+  title: none,
+  authors: none,
+  affiliation: none,
+  abstract: none,
+  body
+) = {
+  assert(title != none, message: "Academic papers require a title")
+  assert(authors != none, message: "Academic papers require at least one author")
+  
+  // ... rest of template
+}
+
+// Casual document - everything optional
+#let casual-doc(
+  title: none,
+  body
+) = {
+  if title != none {
+    heading(level: 1)[#title]
+  }
+  body
+}
+```
+
+### Best Practices for Missing Metadata
+
+1. **Use `none` as default**: Always set parameters to `none` by default
+2. **Check before rendering**: Use `if param != none` before displaying
+3. **Provide sensible fallbacks**: Use placeholder text or computed values
+4. **Document requirements**: Clearly state which fields are required in comments
+5. **Fail gracefully**: Show helpful error messages in the PDF rather than crashing
+6. **Consider use cases**: Academic papers need different fields than casual notes
+
+### Example: Robust Template
+
+```typst
+#let robust-template(
+  title: none,
+  author: none,
+  date: none,
+  version: none,
+  body
+) = {
+  // Helper function for safe rendering
+  let render-if-present(label, value) = {
+    if value != none [
+      #text(weight: "bold")[#label:] #value \
+    ]
+  }
+  
+  // Title with fallback
+  align(center)[
+    #text(24pt, weight: "bold")[
+      #if title != none { title } else { text(fill: gray)["Untitled"] }
+    ]
+  ]
+  v(1em)
+  
+  // Metadata table - only show provided fields
+  let metadata = (
+    ("Author", author),
+    ("Date", if date != none { date } else { datetime.today().display() }),
+    ("Version", version),
+  ).filter(((label, val)) => val != none)
+  
+  if metadata.len() > 0 {
+    align(center)[
+      #for (label, value) in metadata [
+        #text[#label: #value] \
+      ]
+    ]
+  }
+  v(2em)
+  
+  body
+}
+```
+
+### Converter Support
+
+The md2pdf converter handles missing metadata gracefully:
+
+- Fields not in frontmatter are simply not passed to the template
+- Template receives `none` for all unprovided parameters
+- No errors are raised for missing optional fields
+- Templates can implement their own validation logic
+
 ### 3. Body Rendering
 
 The template MUST render the `body` parameter:
